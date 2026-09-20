@@ -1,0 +1,13 @@
+# ForgeAI backend — runtime dependencies
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.32,<1.0
+SQLAlchemy>=2.0.36,<2.1
+alembic>=1.14,<2.0
+pydantic>=2.9,<3.0
+pydantic-settings>=2.6,<3.0
+psycopg2-binary>=2.9,<3.0        # PostgreSQL driver (not needed for SQLite dev)
+PyJWT>=2.9,<3.0
+bcrypt>=4.2,<5.0
+python-multipart>=0.0.12         # multipart/form-data (file uploads)
+email-validator>=2.2
+google-genai>=0.1.0

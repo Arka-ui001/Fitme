@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ForgeAI — Fitness Intelligence</title>
+  <meta name="description" content="ForgeAI — a personal AI-powered fitness intelligence dashboard.">
+  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23c8fa4b'/><path d='M20 48V16h25v7H28v6h15v7H28v12z' fill='%230a0b0d'/></svg>">
+  <!-- Inter enhances typography when online; the UI falls back to a clean system stack offline. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <noscript><div style="padding:24px;font-family:sans-serif">ForgeAI requires JavaScript.</div></noscript>
+
+  <div class="app">
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div class="side-inner">
+        <a class="side-logo" href="#/dashboard">
+          <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="34" height="34"><rect width="64" height="64" rx="15" fill="var(--accent)"/><path d="M20 48V16h25v7H28v6h15v7H28v12z" fill="#0a0b0d"/></svg>
+          </span>
+          <span class="logo-text">
+            <strong>ForgeAI</strong>
+            <small>Fitness Intelligence</small>
+          </span>
+        </a>
+        <nav class="side-nav" id="sideNav"><!-- nav injected by app.js --></nav>
+        <div class="side-foot">
+          <div class="user-chip-wrap">
+            <a class="user-chip" href="#/settings" style="flex:1;">
+              <span class="avatar" id="sidebarAvatar">U</span>
+              <span class="uc-text"><strong id="sidebarUserName">User</strong><small id="sidebarUserEmail">Personal workspace</small></span>
+            </a>
+            <button class="user-chip-logout" id="sidebarLogoutBtn" title="Sign Out" aria-label="Sign Out">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+          </div>
+          <div class="side-version"><span class="dot dot-ok"></span> forge-core v0.4 · local</div>
+        </div>
+      </div>
+    </aside>
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+    <!-- ============ MAIN ============ -->
+    <div class="main">
+      <header class="topbar">
+        <div class="tb-left">
+          <button class="icon-btn tb-menu" id="btnMenu" aria-label="Open menu"></button>
+          <div class="tb-title-wrap">
+            <h1 class="tb-title" id="tbTitle">Dashboard</h1>
+          </div>
+        </div>
+        <div class="tb-right">
+          <span class="pill pill-date" id="tbDate"></span>
+          <span class="pill pill-ai" id="tbAi" title="Local inference engine"><span class="dot dot-ok pulse"></span> AI&nbsp;online</span>
+          <a class="icon-btn" href="#/settings" aria-label="Settings" id="tbSettings"></a>
+          <a class="avatar avatar-btn" href="#/settings" aria-label="Profile" id="topbarAvatar">U</a>
+        </div>
+      </header>
+
+      <main class="content" id="page" tabindex="-1"><!-- pages render here --></main>
+    </div>
+  </div>
+
+  <!-- ============ MOBILE BOTTOM NAV ============ -->
+  <nav class="bottomnav" id="bottomnav" aria-label="Mobile navigation"></nav>
+
+  <!-- ============ TOASTS ============ -->
+  <div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+  <!-- Configuration -->
+  <script>
+    // For Production: Replace this with your Render backend URL once deployed
+    // e.g., "https://forgeai-backend.onrender.com"
+    window.FORGE_API_BASE = "";
+  </script>
+
+  <!-- Core -->
+  <script src="assets/js/icons.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/components.js"></script>
+  <!-- Pages -->
+  <script src="assets/js/pages/login.js"></script>
+  <script src="assets/js/pages/dashboard.js"></script>
+  <script src="assets/js/pages/progress.js"></script>
+  <script src="assets/js/pages/workouts.js"></script>
+  <script src="assets/js/pages/nutrition.js"></script>
+  <script src="assets/js/pages/analysis.js"></script>
+  <script src="assets/js/pages/coach.js"></script>
+  <script src="assets/js/pages/history.js"></script>
+  <script src="assets/js/pages/evaluation.js"></script>
+  <script src="assets/js/pages/settings.js"></script>
+  <!-- App shell / router -->
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

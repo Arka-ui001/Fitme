@@ -1,0 +1,50 @@
+# ForgeAI backend + PostgreSQL — one command to run everything:
+#   docker compose up --build
+# Then:
+#   API docs      → http://localhost:8000/docs
+#   Demo login    → demo@forgeai.dev / forgeai-demo  (seeded automatically)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: forgeai
+      POSTGRES_PASSWORD: forgeai
+      POSTGRES_DB: forgeai
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forgeai -d forgeai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Uncomment to reach PostgreSQL from the host:
+    # ports:
+    #   - "5432:5432"
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENV: dev
+      DEBUG: "true"
+      SECRET_KEY: ${SECRET_KEY:-dev-only-change-me-in-prod-0123456789abcdef}
+      DATABASE_URL: postgresql+psycopg2://forgeai:forgeai@db:5432/forgeai
+      CORS_ORIGINS: "*"
+      STORAGE_BACKEND: local
+      UPLOAD_DIR: /srv/uploads
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      AI_MODEL_NAME: ${AI_MODEL_NAME:-gemini-1.5-flash}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEMO_USER_EMAIL: demo@forgeai.dev
+      DEMO_USER_PASSWORD: forgeai-demo
+    volumes:
+      - ./uploads:/srv/uploads
+    ports:
+      - "8000:8000"
+    # Migrate → seed (only if demo user missing) → serve
+    command: sh -c "alembic upgrade head && python -m app.db.seed --if-missing && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  pgdata:

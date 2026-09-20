@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: forgeai-backend
+    env: python
+    region: ohio
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "alembic upgrade head && python -m app.db.seed --if-missing && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ENV
+        value: prod
+      - key: CORS_ORIGINS
+        value: "*" # Update this to your frontend URL once deployed (e.g. https://forgeai.vercel.app)
+      - key: AI_PROVIDER
+        value: gemini
+      - key: AI_MODEL_NAME
+        value: gemini-1.5-flash
+      - key: DATABASE_URL
+        sync: false # You will paste your Neon DB URL in the Render dashboard
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false # You will paste your key in the Render dashboard
