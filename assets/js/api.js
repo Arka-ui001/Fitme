@@ -62,7 +62,7 @@
 
   async function probe(base) {
     try {
-      const res = await fetchTimeout(base + "/health", {}, 2500);
+      const res = await fetchTimeout(base + "/health", {}, 25000);
       if (!res.ok) return false;
       const j = await res.json();
       return !!(j && j.success === true && j.data && j.data.status === "ok");

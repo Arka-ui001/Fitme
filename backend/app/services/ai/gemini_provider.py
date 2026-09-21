@@ -33,11 +33,11 @@ class GeminiProvider(AIProvider):
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is required to use the Gemini provider.")
         self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        model_name = settings.AI_MODEL_NAME or "gemini-1.5-flash"
+        model_name = settings.AI_MODEL_NAME or "gemini-3.6-flash"
         if model_name == "forge-rules":
-            model_name = "gemini-1.5-flash"
+            model_name = "gemini-3.6-flash"
         self.model = model_name
-        self.fallback_model = "gemini-1.5-flash"
+        self.fallback_model = "gemini-3.5-flash"
         self.version = settings.AI_MODEL_VERSION or "1.0.0"
 
     def _generate_content(self, prompt: str, schema: type[BaseModel]) -> str:
