@@ -32,7 +32,11 @@ class GeminiProvider(AIProvider):
     def __init__(self):
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is required to use the Gemini provider.")
-        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        # 30-second timeout to prevent hanging on Render free tier
+        self.client = genai.Client(
+            api_key=settings.GEMINI_API_KEY,
+            http_options=types.HttpOptions(timeout=30000),
+        )
         model_name = settings.AI_MODEL_NAME or "gemini-3.6-flash"
         if model_name == "forge-rules":
             model_name = "gemini-3.6-flash"
@@ -53,14 +57,22 @@ class GeminiProvider(AIProvider):
             )
             return response.text
         except Exception as e:
-            # If 503 high demand or temporary outage occurs, attempt fallback model
-            if self.model != self.fallback_model and ("503" in str(e) or "UNAVAILABLE" in str(e)):
-                response = self.client.models.generate_content(
-                    model=self.fallback_model,
-                    contents=prompt,
-                    config=config,
-                )
-                return response.text
+            err_str = str(e)
+            # Try fallback model on 503, timeout, or unavailability
+            should_fallback = (
+                self.model != self.fallback_model and
+                any(k in err_str for k in ("503", "UNAVAILABLE", "timed out", "timeout", "DeadlineExceeded"))
+            )
+            if should_fallback:
+                try:
+                    response = self.client.models.generate_content(
+                        model=self.fallback_model,
+                        contents=prompt,
+                        config=config,
+                    )
+                    return response.text
+                except Exception:
+                    pass
             raise
 
     def _get_context_str(self, ctx: UserContext) -> str:
