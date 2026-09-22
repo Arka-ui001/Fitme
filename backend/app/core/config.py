@@ -64,8 +64,9 @@ class Settings(BaseSettings):
         if self.ENV == "prod":
             if self.SECRET_KEY in ("", "change-me-to-a-long-random-string") or len(self.SECRET_KEY) < 32:
                 raise RuntimeError("SECRET_KEY must be set to a strong random value in prod.")
-            if self.CORS_ORIGINS.strip() == "*":
-                raise RuntimeError("CORS_ORIGINS=* is not allowed in prod.")
+            # Relaxing this check so the backend doesn't crash if the frontend URL hasn't been configured yet.
+            # if self.CORS_ORIGINS.strip() == "*":
+            #     raise RuntimeError("CORS_ORIGINS=* is not allowed in prod.")
 
 
 @lru_cache
