@@ -492,12 +492,39 @@
     },
     getHistory()    { return remote("/api/history", () => D().history, (d) => (d.items || [])); },
     getEvaluation() { return remote("/api/evaluations", () => D().evaluation); },
-    getCoach()      { return remote("/api/coach/conversations", () => D().coach); },
+    async getCoach() {
+      if (!(await ensureConnected())) return D().coach;
+      const res = await remote("/api/coach/conversations", () => D().coach);
+      if (res && res.items) {
+        const threads = res.items.map(i => ({
+          id: i.id,
+          title: i.title || "Chat",
+          date: new Date(i.updated_at || new Date()).toLocaleDateString("en-IN", {month: "short", day: "numeric"})
+        }));
+        const conversations = {};
+        for (const t of threads) {
+          try {
+            const det = await remote("/api/coach/conversations/" + t.id);
+            if (det && det.messages) {
+              conversations[t.id] = det.messages.map(m => ({
+                role: m.role,
+                text: m.content,
+                evidence: (m.context_json && m.context_json.evidence) || [],
+                confidence: (m.context_json && m.context_json.confidence) || 0,
+                data: (m.context_json && m.context_json.data) || []
+              }));
+            }
+          } catch(e) {}
+        }
+        return { threads, conversations };
+      }
+      return res;
+    },
     getAnalysis()   { return remote("/api/analysis", () => D().analysis); },
     async sendCoachMessage(message, threadId) {
       if (!(await ensureConnected())) return null;
       const opts = { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, thread_id: threadId }) };
+        body: JSON.stringify({ message, conversation_id: threadId }) };
       return remote("/api/coach/chat", null, null, opts);
     },
     async getUser() {

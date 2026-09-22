@@ -122,6 +122,7 @@
         try {
           const res = await Forge.api.sendCoachMessage(q, threadId);
           if (res) {
+            if (!threadId && res.conversation_id) threadId = res.conversation_id;
             messages.push({ role: "ai", text: res.reply ? res.reply.content : res.text, evidence: res.evidence, confidence: res.confidence, data: res.data });
           } else {
             messages.push({ role: "ai", text: "Sorry, I couldn't process that right now." });
