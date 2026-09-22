@@ -42,9 +42,11 @@ def list_workouts(current_user: User = Depends(get_current_user), db: Session = 
     sessions_by_id = {s.id: s for s in sessions}
     sets = repo.sets_in_range(current_user.id, day - timedelta(days=70), day)
 
-    # current week grid Mon..Sun
+    # current week grid Mon..Sun – base week on most recent session if any
     week = []
-    ws = iso_week_start(day)
+    # Determine reference date: most recent session date or today
+    ref_date = sessions[0].date if sessions else day
+    ws = iso_week_start(ref_date)
     by_date = {}
     for s in repo.range(current_user.id, start=ws, end=ws + timedelta(days=6)):
         by_date[s.date] = s

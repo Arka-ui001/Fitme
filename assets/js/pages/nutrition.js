@@ -375,8 +375,8 @@
           );
           if (!foodResult || !foodResult.id) throw new Error("Failed to create food item");
 
-          // Log as grams/100 servings of the 100g item
-          await Forge.api.logFood(mealType, foodResult.id, grams / 100);
+          // Log the food amount in grams directly
+          await Forge.api.logFood(mealType, foodResult.id, grams);
 
           ForgeUI.toast(`${name} (${grams}g, ${calc.kcal} kcal) logged!`);
           cleanup();

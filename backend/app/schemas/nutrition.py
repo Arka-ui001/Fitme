@@ -37,7 +37,7 @@ class MealCreate(BaseModel):
 
 class FoodLogCreate(BaseModel):
     food_item_id: int
-    quantity: float = Field(gt=0, le=100, description="Servings (fractional allowed: 1.5 = 150g of a 100g serving).")
+    quantity: float = Field(gt=0, le=5000, description="Weight in grams (or ml for liquids). Example: 150 means 150g of the food item.")
 
 
 class FoodLogOut(BaseModel):

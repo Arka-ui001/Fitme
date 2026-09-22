@@ -14,14 +14,16 @@ from app.utils.datetime import today
 
 
 def serving_totals(item: FoodItem, quantity: float) -> dict:
-    """Totals for one FoodLog (quantity = servings). Deterministic."""
+    """Totals for one FoodLog (quantity = weight in grams/ml). Deterministic."""
+    # quantity is actual weight; calculate factor based on serving size
     q = float(quantity)
+    factor = q  # quantity is number of servings
     return {
-        "calories": round(float(item.calories) * q, 1),
-        "protein": round(float(item.protein) * q, 1),
-        "carbohydrates": round(float(item.carbohydrates) * q, 1),
-        "fat": round(float(item.fat) * q, 1),
-        "fiber": round(float(item.fiber) * q, 1),
+        "calories": round(float(item.calories) * factor, 1),
+        "protein": round(float(item.protein) * factor, 1),
+        "carbohydrates": round(float(item.carbohydrates) * factor, 1),
+        "fat": round(float(item.fat) * factor, 1),
+        "fiber": round(float(item.fiber) * factor, 1),
     }
 
 
