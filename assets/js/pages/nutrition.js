@@ -35,7 +35,8 @@
         <div class="page-actions">
           <button class="btn" id="btnWater">${I("droplet", 14)} Log water</button>
           <button class="btn btn-primary" id="btnFood">${I("plus", 14)} Log food</button>
-        </div>
+          <button class="btn btn-primary" id="btnPlanDiet">${I("calendar", 14)} Plan My Diet</button>
+          </div>
       </div>
 
       <div class="grid g2">

@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends
+import json
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -31,6 +32,10 @@ class FoodLogItem(BaseModel):
 class MealWithLogsCreate(MealCreate):
     """POST /api/nutrition/meals — create (or merge into) a meal and optionally log foods."""
     logs: list[FoodLogItem] = Field(default_factory=list)
+
+# Request model for AI nutrition lookup
+class FoodLookupRequest(BaseModel):
+    name: str = Field(..., description="Food name to lookup via AI")
 
 
 @router.get("")
