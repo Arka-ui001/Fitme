@@ -12,10 +12,11 @@
     { id: "workouts",   title: "Workouts",   icon: "dumbbell" },
     { id: "nutrition",  title: "Nutrition",  icon: "utensils" },
     { group: "Intelligence" },
-    { id: "analysis",   title: "AI Analysis", icon: "scan", badge: "CV" },
-    { id: "coach",      title: "AI Coach",   icon: "spark" },
-    { id: "history",    title: "History",    icon: "clock" },
-    { id: "evaluation", title: "Evaluation", icon: "shieldcheck" },
+    { id: "analysis",   title: "AI Analysis",        icon: "scan", badge: "CV" },
+    { id: "coach",      title: "AI Coach",           icon: "spark" },
+    { id: "calorie-calc", title: "Calorie Calculator", icon: "scale" },
+    { id: "history",    title: "History",             icon: "clock" },
+    { id: "evaluation", title: "Evaluation",          icon: "shieldcheck" },
     { group: "System" },
     { id: "settings",   title: "Settings",   icon: "gear" }
   ];

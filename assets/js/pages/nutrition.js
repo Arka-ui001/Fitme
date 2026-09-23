@@ -472,5 +472,239 @@
     const addMealBtn = root.querySelector("#btnAddMeal");
     if (addMealBtn) addMealBtn.addEventListener("click", openFoodModal);
     root.querySelector("#btnWater").addEventListener("click", () => ForgeUI.toast("Water logged · +250 ml"));
+
+    /* ---------- Diet Planner Modal ---------- */
+    root.querySelector("#btnPlanDiet").addEventListener("click", openDietPlannerModal);
+
+    function openDietPlannerModal() {
+      const inpStyle = `width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-family:inherit;font-size:14px;box-sizing:border-box;`;
+
+      const DESI_FOODS = [
+        { key: "eggs",          label: "Eggs",           unit: "pcs",  gPerUnit: 55,  per100: { kcal: 155, protein: 13,  carbs: 1.1, fat: 11, fiber: 0 } },
+        { key: "dal",           label: "Dal (Lentils)",  unit: "g",    gPerUnit: 1,   per100: { kcal: 116, protein: 7,   carbs: 20,  fat: 2,  fiber: 4 } },
+        { key: "soy",           label: "Soya Chunks",    unit: "g",    gPerUnit: 1,   per100: { kcal: 345, protein: 52,  carbs: 33,  fat: 0.5,fiber: 13} },
+        { key: "rice",          label: "Rice (cooked)",  unit: "g",    gPerUnit: 1,   per100: { kcal: 130, protein: 2.7, carbs: 28,  fat: 0.3,fiber: 0.4}},
+        { key: "roti",          label: "Roti / Chapati", unit: "pcs",  gPerUnit: 40,  per100: { kcal: 297, protein: 8,   carbs: 55,  fat: 4,  fiber: 2.5}},
+        { key: "chicken",       label: "Chicken Breast", unit: "g",    gPerUnit: 1,   per100: { kcal: 165, protein: 31,  carbs: 0,   fat: 3.6,fiber: 0 } },
+        { key: "paneer",        label: "Paneer",         unit: "g",    gPerUnit: 1,   per100: { kcal: 265, protein: 18,  carbs: 3.5, fat: 21, fiber: 0 } },
+        { key: "oats",          label: "Oats",           unit: "g",    gPerUnit: 1,   per100: { kcal: 389, protein: 17,  carbs: 66,  fat: 7,  fiber: 10} },
+        { key: "milk",          label: "Milk",           unit: "ml",   gPerUnit: 1,   per100: { kcal: 61,  protein: 3.2, carbs: 4.8, fat: 3.3,fiber: 0 } },
+        { key: "whey",          label: "Whey Protein",   unit: "g",    gPerUnit: 1,   per100: { kcal: 400, protein: 80,  carbs: 10,  fat: 5,  fiber: 0 } },
+        { key: "peanut_butter", label: "Peanut Butter",  unit: "g",    gPerUnit: 1,   per100: { kcal: 588, protein: 25,  carbs: 20,  fat: 50, fiber: 6 } },
+        { key: "banana",        label: "Banana",         unit: "pcs",  gPerUnit: 120, per100: { kcal: 89,  protein: 1.1, carbs: 23,  fat: 0.3,fiber: 2.6}},
+      ];
+
+      const overlay = document.createElement("div");
+      overlay.id = "dietPlannerOverlay";
+      overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.78);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);animation:fadeIn .2s ease";
+
+      overlay.innerHTML = `
+        <style>
+          @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+          @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+          #dietPlannerBox { animation: slideUp .25s ease; }
+          .dp-food-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+          .dp-food-row:last-child { border-bottom:none; }
+          .dp-unit { font-size:12px; color:var(--text-3); width:30px; text-align:right; }
+          .dp-meal { background:var(--bg-card); border-radius:12px; padding:14px 16px; margin-bottom:10px; border:1px solid var(--border); }
+          .dp-meal-title { font-size:13px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+          .dp-meal-item { display:flex; justify-content:space-between; font-size:14px; padding:3px 0; }
+          .dp-meal-item small { color:var(--text-3); font-size:12px; }
+          .dp-total-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border); margin-top:8px; font-weight:700; }
+          .dp-macros { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
+          .dp-macro-card { background:var(--bg-card); border-radius:10px; padding:10px; text-align:center; border:1px solid var(--border); }
+          .dp-macro-val { font-size:20px; font-weight:800; }
+          .dp-macro-lbl { font-size:11px; color:var(--text-3); margin-top:2px; }
+          .dp-log-btn { background:var(--accent-dim); color:var(--accent); border:1px solid var(--accent); border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; font-weight:600; transition:background .15s; }
+          .dp-log-btn:hover { background:var(--accent); color:#fff; }
+        </style>
+        <div id="dietPlannerBox" class="card" style="width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:28px;background:var(--bg);border-radius:20px;position:relative;scrollbar-width:thin;">
+          <div style="margin-bottom:22px">
+            <div class="card-title" style="font-size:20px">🥗 Plan My Diet</div>
+            <div class="muted" style="font-size:13px;margin-top:4px">Tell me how much of each food you have available. I'll build a daily meal plan for you.</div>
+          </div>
+
+          <div id="dpStep1">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:12px">What do you have available?</div>
+            ${DESI_FOODS.map(f => `
+              <div class="dp-food-row">
+                <span style="font-size:14px;font-weight:500">${f.label}</span>
+                <input type="number" id="dp_${f.key}" min="0" placeholder="0" style="${inpStyle}width:90px;text-align:center" />
+                <span class="dp-unit">${f.unit}</span>
+              </div>`).join("")}
+
+            <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);white-space:nowrap">Daily calorie target:</label>
+              <input type="number" id="dpCalTarget" value="${calTarget}" min="1000" max="5000" style="${inpStyle}width:120px;text-align:center" />
+              <span style="font-size:13px;color:var(--text-3)">kcal</span>
+            </div>
+
+            <button id="dpGenerate" class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;margin-top:20px;border-radius:10px">
+              ✨ Generate My Diet Plan
+            </button>
+          </div>
+
+          <div id="dpStep2" style="display:none">
+            <div id="dpPlanOutput"></div>
+            <div style="display:flex;gap:10px;margin-top:18px">
+              <button id="dpBack" class="btn btn-ghost" style="flex:1">← Adjust</button>
+              <button id="dpLogAll" class="btn btn-primary" style="flex:2;padding:12px">📋 Log All Meals</button>
+            </div>
+          </div>
+
+          <button id="dpClose" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:20px;padding:4px">✕</button>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      const cleanup = () => overlay.remove();
+      overlay.addEventListener("click", e => { if (e.target === overlay) cleanup(); });
+      overlay.querySelector("#dpClose").addEventListener("click", cleanup);
+      overlay.querySelector("#dpBack").addEventListener("click", () => {
+        overlay.querySelector("#dpStep1").style.display = "block";
+        overlay.querySelector("#dpStep2").style.display = "none";
+      });
+
+      overlay.querySelector("#dpGenerate").addEventListener("click", () => {
+        const target = parseFloat(overlay.querySelector("#dpCalTarget").value) || calTarget;
+
+        // Build availability pool
+        const pool = DESI_FOODS.map(f => {
+          const inp = parseFloat(overlay.querySelector(`#dp_${f.key}`)?.value) || 0;
+          const grams = f.unit === "pcs" || f.unit === "ml" ? inp * f.gPerUnit : inp;
+          return { ...f, availableGrams: grams };
+        }).filter(f => f.availableGrams > 0);
+
+        if (pool.length === 0) {
+          ForgeUI.toast("Add at least one food item to plan", "warn");
+          return;
+        }
+
+        // Smart local diet planner: distribute across 4 meals
+        const MEALS = [
+          { name: "Breakfast 🌅", ratio: 0.25 },
+          { name: "Lunch 🍛",      ratio: 0.35 },
+          { name: "Snack 🥜",      ratio: 0.15 },
+          { name: "Dinner 🌙",     ratio: 0.25 },
+        ];
+
+        // Sort pool: highest protein density first
+        const sortedPool = [...pool].sort((a, b) => b.per100.protein - a.per100.protein);
+        const remaining = sortedPool.map(f => ({ ...f, usedGrams: 0 }));
+
+        const mealPlans = MEALS.map(meal => {
+          const mealKcalTarget = target * meal.ratio;
+          let mealKcal = 0;
+          const items = [];
+
+          for (const food of remaining) {
+            if (mealKcal >= mealKcalTarget) break;
+            const need = mealKcalTarget - mealKcal;
+            const gramsForNeed = Math.round((need / food.per100.kcal) * 100);
+            const available = food.availableGrams - food.usedGrams;
+            if (available <= 0) continue;
+            const grams = Math.min(gramsForNeed, available, food.unit === "pcs" ? food.gPerUnit * 4 : 300);
+            if (grams < 10) continue;
+            const f = grams / 100;
+            const contrib = {
+              name: food.label,
+              grams,
+              kcal: Math.round(food.per100.kcal * f),
+              protein: Math.round(food.per100.protein * f * 10) / 10,
+              per100: food.per100,
+              foodKey: food.key,
+            };
+            items.push(contrib);
+            food.usedGrams += grams;
+            mealKcal += contrib.kcal;
+          }
+
+          return { ...meal, items, totalKcal: Math.round(mealKcal) };
+        });
+
+        const grandTotal = mealPlans.reduce((s, m) => ({
+          kcal: s.kcal + m.totalKcal,
+          protein: s.protein + m.items.reduce((p, i) => p + i.protein, 0),
+          carbs: s.carbs + m.items.reduce((c, i) => c + Math.round(i.per100.carbs * i.grams / 100 * 10) / 10, 0),
+          fat: s.fat + m.items.reduce((ft, i) => ft + Math.round(i.per100.fat * i.grams / 100 * 10) / 10, 0),
+        }), { kcal: 0, protein: 0, carbs: 0, fat: 0 });
+
+        // Store plan for bulk log
+        overlay._plan = mealPlans;
+        overlay._pool = remaining;
+
+        const pctHit = Math.round(grandTotal.kcal / target * 100);
+        const outputEl = overlay.querySelector("#dpPlanOutput");
+        outputEl.innerHTML = `
+          <div style="font-size:13px;color:var(--text-2);margin-bottom:14px">
+            Plan covers <strong style="color:var(--accent)">${grandTotal.kcal.toLocaleString("en-IN")} kcal</strong> (${pctHit}% of ${target.toLocaleString("en-IN")} kcal target)
+          </div>
+          <div class="dp-macros" style="margin-bottom:18px">
+            <div class="dp-macro-card"><div class="dp-macro-val" style="color:var(--accent)">${Math.round(grandTotal.kcal)}</div><div class="dp-macro-lbl">kcal</div></div>
+            <div class="dp-macro-card"><div class="dp-macro-val" style="color:#60d394">${Math.round(grandTotal.protein)}g</div><div class="dp-macro-lbl">protein</div></div>
+            <div class="dp-macro-card"><div class="dp-macro-val" style="color:#fbbf24">${Math.round(grandTotal.carbs)}g</div><div class="dp-macro-lbl">carbs</div></div>
+            <div class="dp-macro-card"><div class="dp-macro-val" style="color:#f472b6">${Math.round(grandTotal.fat)}g</div><div class="dp-macro-lbl">fat</div></div>
+          </div>
+          ${mealPlans.map((meal, mi) => `
+            <div class="dp-meal">
+              <div class="dp-meal-title">${meal.name}</div>
+              ${meal.items.length === 0 ? `<div style="color:var(--text-3);font-size:13px">No foods allocated for this meal</div>` :
+                meal.items.map((item, ii) => `
+                  <div class="dp-meal-item">
+                    <span>${item.name} <small>(${item.grams}g)</small></span>
+                    <span>${item.kcal} kcal · <small>${item.protein}g protein</small></span>
+                  </div>`).join("")}
+              <div class="dp-total-row">
+                <span style="font-size:13px;color:var(--text-2)">Meal total</span>
+                <span>${meal.totalKcal} kcal</span>
+              </div>
+            </div>`).join("")}
+        `;
+
+        overlay.querySelector("#dpStep1").style.display = "none";
+        overlay.querySelector("#dpStep2").style.display = "block";
+      });
+
+      // Log all meals to backend
+      overlay.querySelector("#dpLogAll").addEventListener("click", async () => {
+        if (!overlay._plan) return;
+        if (!Forge.api.mode.includes("remote")) {
+          ForgeUI.toast("Connect backend to log meals", "warn");
+          return;
+        }
+        const btn = overlay.querySelector("#dpLogAll");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" style="display:inline-block;width:14px;height:14px;margin-right:8px"></span> Logging…';
+        const mealTypeMap = ["breakfast", "lunch", "snack", "dinner"];
+        let logged = 0;
+        try {
+          for (let mi = 0; mi < overlay._plan.length; mi++) {
+            const meal = overlay._plan[mi];
+            const mealType = mealTypeMap[mi];
+            for (const item of meal.items) {
+              const foodResult = await Forge.api.createFood(
+                item.name, 100,
+                item.per100.kcal, item.per100.protein,
+                item.per100.carbs, item.per100.fat,
+                item.per100.fiber || 0
+              );
+              if (foodResult && foodResult.id) {
+                await Forge.api.logFood(mealType, foodResult.id, item.grams);
+                logged++;
+              }
+            }
+          }
+          ForgeUI.toast(`✅ Logged ${logged} foods from your diet plan!`);
+          cleanup();
+          Forge.pages.nutrition(root);
+        } catch (err) {
+          ForgeUI.toast("Failed to log some foods", "warn");
+          console.error(err);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = "📋 Log All Meals";
+        }
+      });
+    }
   };
 })();
