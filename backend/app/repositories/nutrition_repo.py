@@ -25,14 +25,10 @@ class FoodItemRepository(BaseRepository[FoodItem]):
         return self.create(**fields), True
 
     def search(self, query: str, limit: int = 20) -> list[FoodItem]:
-        # First try exact (case-insensitive) match
-        exact_stmt = select(FoodItem).where(FoodItem.name.ilike(query.strip()))
-        exact = list(self.db.scalars(exact_stmt).all())
-        if exact:
-            return exact[:limit]
-        # Fallback to fuzzy search
-        stmt = select(FoodItem).where(FoodItem.name.ilike(f"%{query.strip()}%"))
-        return list(self.db.scalars(stmt).limit(limit).all())
+        # Return only exact (case-insensitive) matches, no fuzzy fallback
+        stmt = select(FoodItem).where(FoodItem.name.ilike(query.strip()))
+        results = list(self.db.scalars(stmt).limit(limit).all())
+        return results
 
 
 class MealRepository(BaseRepository[Meal]):

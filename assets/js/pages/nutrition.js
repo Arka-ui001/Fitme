@@ -256,7 +256,15 @@
             <div style="font-size:12px;color:var(--text-3);text-align:center" id="fdGramsLabel"></div>
             <div style="display:flex;gap:10px">
               <button class="btn btn-ghost" id="fdBack" style="flex:1">← Change food</button>
-              <button class="btn btn-primary" id="fdConfirm" style="flex:2;padding:12px">✓ Log this</button>
+              <button class="btn btn-primary" id="fdConfirm" style="flex:2;padding:12px">Add food</button>
+            <div id="fdFoodList" style="margin-top:8px;max-height:120px;overflow:auto;"></div>
+            <button class="btn btn-ghost" id="fdAddSideDishToggle" style="margin-top:8px;">Add side dish</button>
+            <div id="fdSideDishContainer" style="display:none;margin-top:8px;">
+              <input type="text" id="fdSideDishName" placeholder="Side dish name" style="width:100%;margin-bottom:4px;" />
+              <input type="number" id="fdSideDishGrams" placeholder="Grams" style="width:100%;margin-bottom:4px;" />
+              <button class="btn btn-primary" id="fdAddSideDish" style="flex:2;padding:12px;">Add side dish</button>
+            </div>
+            <button class="btn btn-ghost" id="fdAddAnother" style="margin-top:8px;">Finish logging</button>
             </div>
           </div>
 
@@ -267,6 +275,16 @@
       document.body.appendChild(modal);
 
       let foundNutrition = null; // { per100, source }
+    let selectedFoods = [];
+    const renderSelected = () => {
+      const listEl = modal.querySelector('#fdFoodList');
+      if (!listEl) return;
+      listEl.innerHTML = selectedFoods.map((f,i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span>${f.name} (${f.grams}g)</span>
+          <span>${f.calc.kcal} kcal</span>
+        </div>`).join('');
+    };
 
       const cleanup = () => modal.remove();
       modal.addEventListener("click", (e) => { if (e.target === modal) cleanup(); });
@@ -349,7 +367,7 @@
         foundNutrition = null;
       });
 
-      // Confirm → create food item + log
+      // Confirm → add food to list (supports multiple entries)
       modal.querySelector("#fdConfirm").addEventListener("click", async () => {
         if (!foundNutrition) return;
 
@@ -366,7 +384,7 @@
           // Create food item with per-100g values (serving_size = 100g, quantity = grams/100 servings)
           const foodResult = await Forge.api.createFood(
             name,
-            100, // always store as per-100g serving
+            100,
             foundNutrition.per100.kcal,
             foundNutrition.per100.protein,
             foundNutrition.per100.carbs,
@@ -378,20 +396,74 @@
           // Log the food amount in grams directly
           await Forge.api.logFood(mealType, foodResult.id, grams);
 
-          ForgeUI.toast(`${name} (${grams}g, ${calc.kcal} kcal) logged!`);
-          cleanup();
-          Forge.pages.nutrition(root);
+          // Add to UI list
+          selectedFoods.push({ name, grams, calc, foodId: foodResult.id, mealType });
+          renderSelected();
+
+          // Reset fields for next entry
+          modal.querySelector("#fdName").value = "";
+          modal.querySelector("#fdGrams").value = "";
+          step1.style.display = "flex";
+          step2.style.display = "none";
+          foundNutrition = null;
         } catch (err) {
-          ForgeUI.toast("Failed to log food", "warn");
+          ForgeUI.toast("Failed to add food", "warn");
           console.error(err);
+        } finally {
           confirmBtn.disabled = false;
-          confirmBtn.innerHTML = "✓ Log this";
+          confirmBtn.innerHTML = "Add food";
         }
       });
 
       // Allow Enter key in the name field to trigger lookup
       modal.querySelector("#fdName").addEventListener("keydown", (e) => {
         if (e.key === "Enter") modal.querySelector("#fdLookup").click();
+      });
+
+      // Toggle side dish UI
+      modal.querySelector("#fdAddSideDishToggle").addEventListener("click", () => {
+        const container = modal.querySelector("#fdSideDishContainer");
+        container.style.display = container.style.display === "none" ? "block" : "none";
+      });
+
+      // Add side dish entry
+      modal.querySelector("#fdAddSideDish").addEventListener("click", async () => {
+        const name = modal.querySelector("#fdSideDishName").value.trim();
+        const grams = parseFloat(modal.querySelector("#fdSideDishGrams").value);
+        if (!name || isNaN(grams) || grams <= 0) {
+          ForgeUI.toast("Enter side dish name and grams", "warn");
+          return;
+        }
+        const nutrition = await lookupNutrition(name);
+        if (!nutrition) {
+          ForgeUI.toast("Side dish not found", "warn");
+          return;
+        }
+        const calc = calcForGrams(nutrition.per100, grams);
+        try {
+          const foodResult = await Forge.api.createFood(
+            name,
+            100,
+            nutrition.per100.kcal,
+            nutrition.per100.protein,
+            nutrition.per100.carbs,
+            nutrition.per100.fat,
+            nutrition.per100.fiber
+          );
+          await Forge.api.logFood("side", foodResult.id, grams);
+          selectedFoods.push({ name, grams, calc, foodId: foodResult.id, mealType: "side" });
+          renderSelected();
+          modal.querySelector("#fdSideDishName").value = "";
+          modal.querySelector("#fdSideDishGrams").value = "";
+        } catch (e) {
+          ForgeUI.toast("Failed to add side dish", "warn");
+          console.error(e);
+        }
+      });
+
+      // Finish logging – close modal
+      modal.querySelector("#fdAddAnother").addEventListener("click", () => {
+        cleanup();
       });
     }
 

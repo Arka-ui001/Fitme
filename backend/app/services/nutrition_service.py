@@ -17,7 +17,9 @@ def serving_totals(item: FoodItem, quantity: float) -> dict:
     """Totals for one FoodLog (quantity = weight in grams/ml). Deterministic."""
     # quantity is actual weight; calculate factor based on serving size
     q = float(quantity)
-    factor = q  # quantity is number of servings
+    # Calculate factor based on serving size: quantity is weight in grams/ml.
+    # Number of servings = quantity / serving_size (grams per serving).
+    factor = q / float(item.serving_size) if item.serving_size else 0
     return {
         "calories": round(float(item.calories) * factor, 1),
         "protein": round(float(item.protein) * factor, 1),
